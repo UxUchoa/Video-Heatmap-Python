@@ -1,106 +1,93 @@
-# Video-Heatmap-Python
+# Video Heatmap Analyzer
 
-Uma aplicação simples desenvolvida em Python para analisar um vídeo e gerar um heatmap (mapa de calor) baseado nos movimentos detetados ou, mais especificamente, nas posições do cursor registadas ao longo do tempo.
+A Python desktop app that analyzes **screen recordings** and generates a heatmap of where the mouse cursor went, useful for reviewing usability test sessions and seeing which areas of an interface got the most attention.
 
-## Visão Geral
+[🇧🇷 Leia em português](#-português)
 
-Este projeto utiliza bibliotecas como OpenCV para processamento de vídeo, NumPy para manipulação de dados numéricos, Matplotlib para a geração do heatmap e PyQt5 para a construção da interface gráfica do utilizador (GUI). A aplicação permite carregar um ficheiro de vídeo, processá-lo para extrair informações de movimento (posições do cursor) e, em seguida, visualizar ou guardar um mapa de calor que representa as áreas de maior atividade ou permanência.
+## How it works
 
-## Funcionalidades Principais
+1. You open a video in the PyQt5 interface.
+2. The app reads it frame by frame with OpenCV and finds the cursor by comparing consecutive frames: it blurs both frames slightly, takes their difference, thresholds it and keeps only small, roughly circular, square-ish blobs that look like a cursor.
+3. Each detected position is stored with its timestamp.
+4. For the time range you choose, the positions are accumulated into a heatmap (with a decay factor), smoothed with a Gaussian blur and drawn over the video frame with the selected color map.
 
-*   **Carregamento de Vídeo:** Permite ao utilizador selecionar e carregar um ficheiro de vídeo a partir do sistema local.
-*   **Processamento de Vídeo:** Analisa o vídeo frame a frame para detetar e registar posições relevantes (neste caso, parece focar-se nas posições do cursor associadas a timestamps).
-*   **Geração de Heatmap:** Cria uma imagem de mapa de calor com base nas posições registadas. As áreas com maior concentração de pontos ou maior tempo de permanência são representadas com cores mais "quentes".
-*   **Interface Gráfica:** Oferece uma interface de utilizador intuitiva construída com PyQt5 para facilitar a interação, incluindo:
-    *   Seleção de ficheiro de vídeo.
-    *   Visualização do progresso do processamento.
-    *   Possivelmente, ajuste de parâmetros como fator de decaimento (`decay_factor`) e tamanho do desfoque (`blur_size`) que influenciam a aparência do heatmap.
-    *   Pré-visualização e opção para guardar o heatmap gerado.
-*   **Otimização (Opcional):** Tenta aumentar a prioridade do processo para melhorar a performance durante o processamento do vídeo (utilizando `psutil` em sistemas Windows e `os.nice` em Linux).
+## Features
 
-## Dependências
+- Media panel with the current file and a video preview.
+- Adjustable detection: **sensitivity** (difference threshold) and **min/max size** of the cursor blob.
+- Adjustable output: heatmap **resolution**, **smoothing** (blur size) and color map.
+- Heatmap for a chosen time interval, overlaid on the corresponding frame, with an option to save it.
+- Tries to raise the process priority while processing (`psutil` on Windows, `os.nice` on Linux).
 
-Para executar este projeto, necessita das seguintes bibliotecas Python instaladas:
+## Requirements
 
-*   **opencv-python==4.7.0.72:** Para leitura e processamento de vídeo.
-*   **numpy==1.24.3:** Para operações numéricas eficientes, especialmente com arrays.
-*   **matplotlib==3.7.1:** Para gerar e visualizar o mapa de calor.
-*   **PyQt5==5.15.9:** Para a interface gráfica do utilizador.
-*   **psutil (Opcional):** Utilizado para tentar aumentar a prioridade do processo.
+Python 3 with `opencv-python`, `numpy`, `matplotlib`, `PyQt5` and, optionally, `psutil` (listed in `requirement.txt`).
 
-## Instalação
+## Getting started
 
-Siga estes passos para configurar o ambiente e instalar as dependências:
-
-1.  **Clone o Repositório:**
-    ```bash
-    git clone https://github.com/UchoaTI/Video-Heatmap-Python.git
-    cd Video-Heatmap-Python
-    ```
-
-2.  **Crie um Ambiente Virtual (Recomendado):**
-    ```bash
-    python -m venv venv
-    # Ative o ambiente virtual
-    # Windows
-    .\venv\Scripts\activate
-    # macOS/Linux
-    source venv/bin/activate
-    ```
-
-3.  **Instale as Dependências:**
-    ```bash
-    pip install -r requirement.txt
-    ```
-    Se encontrar problemas com `psutil` ou não necessitar da otimização de prioridade, pode tentar instalar as outras dependências individualmente ou remover `psutil` do `requirement.txt` antes de executar o comando `pip install`.
-
-## Utilização
-
-Após a instalação bem-sucedida das dependências:
-
-1.  **Execute a Aplicação:**
-    Navegue até ao diretório raiz do projeto (onde se encontra o ficheiro `main.py`) e execute o seguinte comando no seu terminal (com o ambiente virtual ativado):
-    ```bash
-    python main.py
-    ```
-
-2.  **Interaja com a Interface:**
-    *   A interface gráfica será iniciada.
-    *   Utilize o botão apropriado (provavelmente "Abrir Vídeo" ou similar) para selecionar o ficheiro de vídeo que deseja analisar.
-    *   Aguarde o processamento do vídeo. O progresso poderá ser indicado numa barra de progresso.
-    *   Após o processamento, o heatmap gerado deverá ser exibido na interface ou disponibilizado para ser guardado como um ficheiro de imagem (provavelmente na pasta `heatmap` ou numa localização escolhida pelo utilizador).
-
-## Configuração
-
-O ficheiro `src/processor.py` define a classe `VideoHeatmapProcessor` com alguns parâmetros que podem influenciar o resultado:
-
-*   `decay_factor` (padrão: 0.95): Controla como a intensidade dos pontos do heatmap diminui ao longo do tempo.
-*   `blur_size` (padrão: 15): Define o tamanho do kernel de desfoque aplicado ao heatmap, suavizando a visualização.
-
-Atualmente, estes parâmetros parecem estar definidos no código. Modificações futuras poderiam expô-los na interface gráfica para ajuste pelo utilizador.
-
-## Estrutura do Projeto
-
-```
-Video-Heatmap-Python/
-├── executavel/       # (Provavelmente para versões compiladas)
-├── heatmap/          # (Provavelmente diretório de saída padrão para heatmaps)
-├── src/
-│   ├── __init__.py
-│   ├── processor.py  # Lógica de processamento de vídeo e geração de heatmap
-│   └── ui.py         # Código da interface gráfica (PyQt5)
-├── .gitattributes
-├── .gitignore
-├── main.py           # Ponto de entrada da aplicação
-├── README.md         # Este ficheiro
-└── requirement.txt   # Lista de dependências Python
+```bash
+git clone https://github.com/UxUchoa/Video-Heatmap-Python.git
+cd Video-Heatmap-Python
+python -m venv venv
+.\venv\Scripts\activate          # macOS/Linux: source venv/bin/activate
+pip install -r requirement.txt
+python main.py
 ```
 
-## Contribuições
+If `psutil` gives you trouble, remove it from `requirement.txt`: it's only used for the priority boost.
 
-Contribuições para melhorar o projeto são bem-vindas. Sinta-se à vontade para abrir *issues* para reportar bugs ou sugerir novas funcionalidades, ou submeter *pull requests* com as suas melhorias.
+## Project structure
 
-## Licença
+```text
+main.py            entry point
+src/processor.py   VideoHeatmapProcessor: cursor detection, heatmap generation and overlay
+src/ui.py          PyQt5 interface ("Video Heatmap Analyzer Professional")
+heatmap/           default output folder
+executavel/        packaged Windows build
+```
 
-O repositório não especifica uma licença. Por favor, contacte o autor (@UchoaTI) para obter informações sobre os termos de uso e distribuição.
+`VideoHeatmapProcessor` defaults: `decay_factor=0.95` and `blur_size=15` (always rounded to an odd number).
 
+---
+
+## 🇧🇷 Português
+
+# Video Heatmap Analyzer
+
+Aplicativo desktop em Python que analisa **gravações de tela** e gera um mapa de calor de por onde o cursor do mouse passou. Serve para revisar sessões de teste de usabilidade e ver quais áreas da interface receberam mais atenção.
+
+### Como funciona
+
+1. Você abre um vídeo na interface em PyQt5.
+2. O app lê o vídeo quadro a quadro com OpenCV e encontra o cursor comparando quadros consecutivos: aplica um leve desfoque nos dois, calcula a diferença, aplica um limiar e mantém só manchas pequenas, quase circulares e com proporção perto de 1:1, que parecem um cursor.
+3. Cada posição detectada é guardada com o momento do vídeo.
+4. No intervalo de tempo escolhido, as posições são acumuladas num mapa de calor (com fator de decaimento), suavizadas com desfoque gaussiano e desenhadas sobre o quadro do vídeo com o mapa de cores escolhido.
+
+### Recursos
+
+- Painel de mídia com o arquivo atual e a prévia do vídeo.
+- Detecção ajustável: **sensibilidade** (limiar da diferença) e **tamanho mínimo e máximo** da mancha do cursor.
+- Saída ajustável: **resolução** do mapa, **suavização** (tamanho do desfoque) e mapa de cores.
+- Mapa de calor de um intervalo de tempo escolhido, sobreposto ao quadro correspondente, com opção de salvar.
+- Tenta aumentar a prioridade do processo durante o processamento (`psutil` no Windows, `os.nice` no Linux).
+
+### Requisitos
+
+Python 3 com `opencv-python`, `numpy`, `matplotlib`, `PyQt5` e, opcionalmente, `psutil` (todos em `requirement.txt`).
+
+### Como rodar
+
+```bash
+git clone https://github.com/UxUchoa/Video-Heatmap-Python.git
+cd Video-Heatmap-Python
+python -m venv venv
+.\venv\Scripts\activate          # macOS/Linux: source venv/bin/activate
+pip install -r requirement.txt
+python main.py
+```
+
+Se o `psutil` der problema, tire ele do `requirement.txt`: ele só é usado para aumentar a prioridade.
+
+### Estrutura
+
+`main.py` é o ponto de entrada, `src/processor.py` tem o `VideoHeatmapProcessor` (detecção do cursor, geração e sobreposição do mapa), `src/ui.py` tem a interface em PyQt5, `heatmap/` é a pasta de saída padrão e `executavel/` guarda a versão empacotada para Windows. Os padrões do processador são `decay_factor=0.95` e `blur_size=15` (sempre arredondado para ímpar).
